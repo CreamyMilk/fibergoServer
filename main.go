@@ -23,8 +23,10 @@ func getpdfpages(path string) string {
 	cmdName := "bash"
 	cmdArgs := []string{"-c", extractscript}
 	if cmdOut, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
-		fmt.Fprintln(os.Stderr, "Pages counter normal error: ", err)
+		return getpdfsls(path)
 	}
+	fmt.Fprintln(os.Stderr, "Pages counter exiftool error: ", err)
+
 	pages := string(cmdOut)
 	if pages != "" {
 		return pages[:len(pages)-1]
