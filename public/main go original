@@ -1,0 +1,168 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"os/exec"
+
+	"github.com/gofiber/fiber"
+
+	"github.com/gofiber/fiber/middleware"
+)
+
+func convert(filename, quality string) {
+	f, _ := os.Create(filename)
+	base_path := "./uploads/testfolder/" + filename
+	outputlocal := "-sOutputFile=" + base_path + "/cool%03d.jpg"
+	_ = os.Mkdir(base_path, os.ModeDir)
+	tempfile := "./uploads/" + filename
+
+	fmt.Printf(filename)
+	var (
+		cmdOut []byte
+		err    error
+	)
+	cmdName := "gs"
+	//cmdArgs := []string{"-h"}
+
+	cmdArgs := []string{"-sDEVICE=jpeg", "-dBATCH", "-dNOPAUSE", outputlocal, "-dJPEGQ=80", "-r200x200", "-g1653x2339", tempfile}
+	if cmdOut, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
+		fmt.Fprintln(os.Stderr, "There executing the conversion: ", err)
+		//os.Exit(1)
+	}
+	output := string(cmdOut)
+	f.WriteString(output)
+	f.Close()
+	//c.Send("Processing")
+}
+
+func main() {
+	app := fiber.New()
+	//Load Balancing
+	//app.Settings.Prefork = true
+	app.Use(middleware.Logger())
+	//app.Use(middleware.Favicon("./favicon.ico"))
+	//Use nginx for server side caching https://www.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
+	//Api grouping for stuff za v2 ni possible
+	app.Static("/", "./public")
+	app.Static("/img", "./uploads", fiber.Static{
+		Compress:  false,
+		ByteRange: false,
+		Browse:    true,
+	})
+	app.Get("/write", func(c *fiber.Ctx) {
+		c.Write("Hello, ")         // => "Hello, "
+		c.Write([]byte("World! ")) // => "Hello, World! "
+		c.Write(123)               // => "Hello, World! 123"
+		for i := 1; i < 2000; i++ {
+			c.Write(i)
+		}
+	})
+	app.Get("/basic", func(c *fiber.Ctx) {
+		c.Send("Hello World")
+		//ridirects /rick rolls
+		c.Redirect("https://google.com")
+	})
+
+	app.Get("/home/:values?", func(c *fiber.Ctx) {
+		c.Send("Get requests" + c.Params("values"))
+	})
+
+	app.Get("/users/*", func(c *fiber.Ctx) {
+		c.Send("Hata uende wapi hapa utarui" + "boom")
+	})
+
+	app.Get("/convert", func(c *fiber.Ctx) {
+		//-o: determines output path+filename (and saves usage of -dBATCH -dNOPAUSE)
+		//-dJPEGQ: sets JPEG quality to 95%
+		//-r: sets resolution to 600dpi
+		//-g: sets image size to 4960x7016px
+		//-sDEVICE: sets output as JPEG
+		c.Send("Processing")
+		cmd := "gs"
+		args := []string{"-sDEVICE=jpeg", "-o bar_%03d_200dpi_q80.jpg", "-dJPEGQ=80", "-r200x200", "-g1653x2339", "test.pdf"}
+		if err := exec.Command(cmd, args...).Run(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		fmt.Println("Successfully halved image in size")
+		c.Send("Processing")
+
+	})
+
+	app.Get("/api/posts", func(c *fiber.Ctx) {
+
+		c.JSON(&fiber.Map{
+			"success": true,
+			"posts":   "posts",
+		})
+	})
+	app.Get("/sourcecodedownload", func(c *fiber.Ctx) {
+		if err := c.Download("./main.go", "sourcecode"); err != nil {
+			c.Next(err) // Pass err to fiber
+		}
+	})
+	app.Post("/savefiles", func(c *fiber.Ctx) {
+		file, err := c.FormFile("myFile")
+
+		// Check for errors:
+		if err == nil {
+			// Save file to root directory:
+			c.SaveFile(file, fmt.Sprintf("./uploads/%s", file.Filename))
+			//fmt.Printf(file.Filename)
+			convert(file.Filename, "200")
+		}
+	})
+	type SomeStruct struct {
+		Name string
+		Age  uint8
+	}
+
+	app.Get("/json", func(c *fiber.Ctx) {
+		// Create data struct:
+		data := SomeStruct{
+			Name: "Grame",
+			Age:  20,
+		}
+
+		if err := c.JSON(data); err != nil {
+			c.Status(500).Send(err)
+			return
+		}
+		// => Content-Type: application/json
+		// => "{"Name": "Grame", "Age": 20}"
+
+		if err := c.JSON(fiber.Map{
+			"name": "Grame",
+			"age":  20,
+		}); err != nil {
+			c.Status(500).Send(err)
+			return
+		}
+		// => Content-Type: application/json
+		// => "{"name": "Grame", "age": 20}"
+	})
+	app.Use("/api", func(c *fiber.Ctx) {
+		c.Set("Content-Type", "application/json")
+		// /c.SendStatus(404)
+		c.Status(500).Send(c.Error())
+	})
+
+	app.Use(func(c *fiber.Ctx) {
+		c.SendFile("./public/404.html")
+		c.Status(404).JSON(&fiber.Map{
+			"success": false,
+			"error":   "There are no posts!",
+		})
+	})
+	//Enable https
+	// cer, err := tls.LoadX509KeyPair("server.crt", "server.key")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// config := &tls.Config{Certificates: []tls.Certificate{cer}}
+
+	// app.Listen(3000, config)
+	app.Listen(3000)
+
+}
