@@ -108,8 +108,10 @@ func main() {
 		BodyLimit:    52428800, //50mb
 		ServerHeader: "Fiber",
 	})
+	app.Use(middleware.Recover())
 	app.Use(cors.New())
 	app.Use(middleware.Logger())
+	
 	//app.Use(middleware.Favicon("./favicon.ico"))
 	//Use nginx for server side caching https://www.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
 	app.Static("/", "./public")
