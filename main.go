@@ -113,7 +113,7 @@ func main() {
 	app.Use(middleware.Logger())
 	
 	//app.Use(middleware.Favicon("./favicon.ico"))
-	//Use nginx for server side caching https://www.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
+	//Use nginx for server side caching https://ww.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
 	app.Static("/", "./public")
 	// app.Static("/pages", "./pages")
 	app.Static("/pages", "./uploads/testfolder", fiber.Static{
