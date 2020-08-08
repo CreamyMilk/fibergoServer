@@ -70,7 +70,7 @@ func oldconvert(filename, quality string) (string, string) {
 		fmt.Fprintln(os.Stderr, "Error in conversion the conversion: ", err)
 	}
 	pages := getpdfpages("./uploads/" + filename)
-	generatedURL := "http://167.172.41.222:8000/?pdf_name=" + filename + "&pages=" + pages
+	generatedURL := "http://167.172.41.222/?pdf_name=" + filename + "&pages=" + pages
 	return generatedURL, pages
 }
 func newconvert(filename, quality string) (string, string, []string) {
@@ -92,7 +92,7 @@ func newconvert(filename, quality string) (string, string, []string) {
 		fmt.Fprintln(os.Stderr, "Error in conversion the conversion: ", err)
 	}
 	pages := getpdfpages("./uploads/" + filename)
-	generatedURL := "http://167.172.41.222:8000/?pdf_name=" + filename + "&pages=" + pages
+	generatedURL := "http://167.172.41.222/?pdf_name=" + filename + "&pages=" + pages
 
 	if i, _ := strconv.Atoi(pages); i != 0 {
 		imageurls = helper.AddPagesdb(filename, i)
@@ -107,7 +107,7 @@ func main() {
 	app := fiber.New(&fiber.Settings{
 		BodyLimit:    52428800, //50mb
 		ServerHeader: "Fiber",
-	})
+	
 	app.Use(middleware.Recover())
 	app.Use(cors.New())
 	app.Use(middleware.Logger())
