@@ -35,6 +35,7 @@ func getpdfpages(path string) string {
 	return getpdfsls(path)
 }
 func getpdfsls(path string) string {
+  //Rethink this implementaion 
 	extractscript := "ls " + "./uploads/testfolder/'" + path + "'/| wc -l"
 	var (
 		err    error
