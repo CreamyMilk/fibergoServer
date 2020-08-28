@@ -14,6 +14,8 @@ import (
 	"jotham/helper"
 )
 
+
+//Uses the ls command to find the number of files 
 func getpdfpages(path string) string {
 	extractscript := "exiftool '" + path + "'| grep Page" + "| grep -o '[[:digit:]]*'"
 	var (
