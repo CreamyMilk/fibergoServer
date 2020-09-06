@@ -14,18 +14,22 @@ type MongoInstance struct {
 	Db     *mongo.Database
 }
 
-var mg MongoInstance
+var Mg MongoInstance
 
 // Database settings (insert your own database name and connection URI)
 const dbName = "fiber_test"
-const mongoURI = "mongodb://user:password@localhost:27017/" + dbName
+const mongoURI = "mongodb+srv://jotham:yousneekybasterd@cluster0.mtbev.gcp.mongodb.net/testss?retryWrites=true&w=majority"
 
 // Employee struct
-type Employee struct {
-	ID     string  `json:"id,omitempty" bson:"_id,omitempty"`
-	Name   string  `json:"name"`
-	Salary float64 `json:"salary"`
-	Age    float64 `json:"age"`
+type Paper struct {
+	Number int    `json:"number"`
+	Link   string `json:"link"`
+}
+type Record struct {
+	ID      string  `json:"id,omitempty" bson:"_id,omitempty"`
+	PdfName string  `json:"pdfname"`
+	NPages  int     `json:"npages"`
+	Pages   []Paper `json:"pages"`
 }
 
 // Connect configures the MongoDB client and initializes the database connection.
@@ -43,7 +47,7 @@ func Connect() error {
 		return err
 	}
 
-	mg = MongoInstance{
+	Mg = MongoInstance{
 		Client: client,
 		Db:     db,
 	}

@@ -14,8 +14,7 @@ import (
 	"jotham/helper"
 )
 
-
-//Uses the ls command to find the number of files 
+//Uses the ls command to find the number of files
 func getpdfpages(path string) string {
 	extractscript := "exiftool '" + path + "'| grep Page" + "| grep -o '[[:digit:]]*'"
 	var (
@@ -37,7 +36,7 @@ func getpdfpages(path string) string {
 	return getpdfsls(path)
 }
 func getpdfsls(path string) string {
-  //Rethink this implementaion 
+	//Rethink this implementaion
 	extractscript := "ls " + "./uploads/testfolder/'" + path + "'/| wc -l"
 	var (
 		err    error
@@ -76,9 +75,12 @@ func oldconvert(filename, quality string) (string, string) {
 	generatedURL := "http://167.172.41.222/?pdf_name=" + filename + "&pages=" + pages
 	return generatedURL, pages
 }
-func newconvert(filename, quality string) (string, string, []string) {
+func newconvert(filename, quality string) (string, string, []helper.Paper) {
+	//Database
+
 	//Add quality string
-	var imageurls []string
+
+	var imageurls []helper.Paper
 	storeagepath := "./uploads/testfolder/" + filename
 	outputfile := "-sOutputFile=" + storeagepath + "/%d.jpg"
 	_ = os.Mkdir(storeagepath, 0755)
@@ -110,11 +112,11 @@ func main() {
 	app := fiber.New(&fiber.Settings{
 		BodyLimit:    52428800, //50mb
 		ServerHeader: "Fiber",
-	
+	})
 	app.Use(middleware.Recover())
 	app.Use(cors.New())
 	app.Use(middleware.Logger())
-	
+
 	//app.Use(middleware.Favicon("./favicon.ico"))
 	//Use nginx for server side caching https://ww.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
 	app.Static("/", "./public")
@@ -125,11 +127,32 @@ func main() {
 		Browse:    true,
 	})
 	app.Post("/savefiles", func(c *fiber.Ctx) {
+
 		file, err := c.FormFile("myFile")
 
 		if err == nil {
-			c.SaveFile(file, fmt.Sprintf("./uploads/%s", file.Filename))
+			err = c.SaveFile(file, fmt.Sprintf("./uploads/%s", file.Filename))
+			if err != nil {
+				fmt.Println(err)
+				c.Status(500).Send(err)
+				//panic(err)
+				fmt.Printf("%T", err)
+			}
+			fmt.Println("Doing the db stuff")
 			filename, pages, imageurls := newconvert(file.Filename, "200")
+			collection := helper.Mg.Db.Collection("pdfs")
+			page := new(helper.Record)
+			page.ID = ""
+			page.PdfName = filename
+			page.NPages, _ = strconv.Atoi(pages)
+			page.Pages = imageurls
+
+			insertionResult, err := collection.InsertOne(c.Fasthttp, page)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%T %v", insertionResult, insertionResult)
+			fmt.Printf("%v", imageurls)
 			c.JSON(&fiber.Map{
 				"pages":     pages,
 				"filename":  filename,
