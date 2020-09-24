@@ -158,7 +158,7 @@ func main() {
 				"filename":  filename,
 				"imagesUrl": imageurls,
 			})
-			//c.Redirect(filename)
+			c.Redirect(filename)
 		}
 	})
 	// app.Get("/pages/:id",func(c *fiber.Ctx){

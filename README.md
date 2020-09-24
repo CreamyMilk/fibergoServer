@@ -11,3 +11,6 @@ turn the flipbook generator to be Map based for eg like
   1:ImageURl,
   2:ImageURl
 }
+
+
+consider to upgrade to latest go fiber Version

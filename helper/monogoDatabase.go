@@ -18,7 +18,7 @@ var Mg MongoInstance
 
 // Database settings (insert your own database name and connection URI)
 const dbName = "fiber_test"
-const mongoURI = "mongodb+srv://jotham:yousneekybasterd@cluster0.mtbev.gcp.mongodb.net/testss?retryWrites=true&w=majority"
+const mongoURI = "mongodb+srv://jotham:brosbeforehoes@cluster0.mtbev.gcp.mongodb.net/testss?retryWrites=true&w=majority"
 
 // Employee struct
 type Paper struct {
