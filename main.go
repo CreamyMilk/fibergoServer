@@ -72,7 +72,7 @@ func oldconvert(filename, quality string) (string, string) {
 		fmt.Fprintln(os.Stderr, "Error in conversion the conversion: ", err)
 	}
 	pages := getpdfpages("./uploads/" + filename)
-	generatedURL := "http://167.172.41.222/?pdf_name=" + filename + "&pages=" + pages
+	generatedURL := "http://readzy.afica/?pdf_name=" + filename + "&pages=" + pages
 	return generatedURL, pages
 }
 func newconvert(filename, quality string) (string, string, []helper.Paper) {
@@ -97,7 +97,7 @@ func newconvert(filename, quality string) (string, string, []helper.Paper) {
 		fmt.Fprintln(os.Stderr, "Error in conversion the conversion: ", err)
 	}
 	pages := getpdfpages("./uploads/" + filename)
-	generatedURL := "http://167.172.41.222/?pdf_name=" + filename + "&pages=" + pages
+	generatedURL := "http://readzy.afica/?pdf_name=" + filename + "&pages=" + pages
 
 	if i, _ := strconv.Atoi(pages); i != 0 {
 		imageurls = helper.AddPagesdb(filename, i)
