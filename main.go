@@ -7,9 +7,11 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/gofiber/cors"
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/fiber/middleware"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 
 	"jotham/helper"
 )
@@ -76,10 +78,7 @@ func oldconvert(filename, quality string) (string, string) {
 	return generatedURL, pages
 }
 func newconvert(filename, quality string) (string, string, []helper.Paper) {
-	//Database
-
 	//Add quality string
-
 	var imageurls []helper.Paper
 	storeagepath := "./uploads/testfolder/" + filename
 	outputfile := "-sOutputFile=" + storeagepath + "/%d.jpg"
@@ -104,18 +103,17 @@ func newconvert(filename, quality string) (string, string, []helper.Paper) {
 	}
 	return generatedURL, pages, imageurls
 }
-
 func main() {
 	if err := helper.Connect(); err != nil {
 		log.Fatal(err)
 	}
-	app := fiber.New(&fiber.Settings{
+	app := fiber.New(fiber.Config{
 		BodyLimit:    52428800, //50mb
 		ServerHeader: "Fiber",
 	})
-	app.Use(middleware.Recover())
+	app.Use(recover.New())
+	app.Use(logger.New())
 	app.Use(cors.New())
-	app.Use(middleware.Logger())
 
 	//app.Use(middleware.Favicon("./favicon.ico"))
 	//Use nginx for server side caching https://ww.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
@@ -126,15 +124,14 @@ func main() {
 		ByteRange: false,
 		Browse:    true,
 	})
-	app.Post("/savefiles", func(c *fiber.Ctx) {
-
+	app.Post("/savefiles", func(c *fiber.Ctx) error {
 		file, err := c.FormFile("myFile")
 
 		if err == nil {
 			err = c.SaveFile(file, fmt.Sprintf("./uploads/%s", file.Filename))
 			if err != nil {
 				fmt.Println(err)
-				c.Status(500).Send(err)
+				c.Status(500)
 				//panic(err)
 				fmt.Printf("%T", err)
 			}
@@ -147,7 +144,7 @@ func main() {
 			page.NPages, _ = strconv.Atoi(pages)
 			page.Pages = imageurls
 
-			insertionResult, err := collection.InsertOne(c.Fasthttp, page)
+			insertionResult, err := collection.InsertOne(c.Context(), page)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -160,28 +157,31 @@ func main() {
 			})
 			c.Redirect(filename)
 		}
+		return err
 	})
 	// app.Get("/pages/:id",func(c *fiber.Ctx){
 
 	// }
-	app.Get("/redirect", func(c *fiber.Ctx) {
-		c.Send("Hello World")
+	app.Get("/redirect", func(c *fiber.Ctx) error{
+		c.SendString("Hello World")
 		//ridirects /rick rolls
 		c.Redirect("https://google.com")
+		return nil
 	})
 
-	app.Get("/sourcecodedownload", func(c *fiber.Ctx) {
+	app.Get("/sourcecodedownload", func(c *fiber.Ctx) error{
 		if err := c.Download("./main.go", "sourcecode"); err != nil {
-			c.Next(err) // Pass err to fiber
+			c.Next() // Pass err to fiber
 		}
+		return nil
 	})
 
-	app.Use(func(c *fiber.Ctx) {
+	app.Use(func(c *fiber.Ctx) error{
 		c.SendFile("./public/404.html")
-		c.Status(404).JSON(&fiber.Map{
+		return c.Status(404).JSON(&fiber.Map{
 			"success": false,
 			"error":   "There are no posts!",
 		})
 	})
-	app.Listen(3000)
+	log.Fatal(app.Listen(":3000"))
 }
