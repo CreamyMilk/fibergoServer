@@ -17,6 +17,26 @@ import (
 )
 
 //Uses the ls command to find the number of files
+//foo=$(strings < pdffile.pdf | sed -n 's|.*/Count -\{0,1\}\([0-9]\{1,\}\).*|\1|p' | sort -rn | head -n 1)
+func directpages(path string) string {
+	template := "strings < '%s' | sed -n 's|.*/Count -\\{0,1\\}\\([0-9]\\{1,\\}\\).*|\\1|p' | sort -rn | head -n 1"
+	extractscript := fmt.Sprintf(template,path)
+	var (
+		err    error
+		cmdOut []byte
+	)
+	cmdName := "bash"
+	cmdArgs := []string{"-c", extractscript}
+	if cmdOut, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
+		return getpdfsls(path)
+	}
+	pages := string(cmdOut)
+	if pages ==""{
+		return getpdfpages(path)
+	}
+	fmt.Printf("The pdf %s has %s done",path,pages)
+	return pages
+}
 func getpdfpages(path string) string {
 	extractscript := "exiftool '" + path + "'| grep Page" + "| grep -o '[[:digit:]]*'"
 	var (
@@ -90,12 +110,12 @@ func newconvert(filename, quality string) (string, string, []helper.Paper) {
 	)
 	//gs -dNOPAUSE -sDEVICE=jpeg -r144 -sOutputFile=p%03d.jpg foodmag.pdf
 	cmdName := "gs"
-	cmdArgs := []string{"-sDEVICE=jpeg", "-dBATCH", "-dNOPAUSE", outputfile, "-r144", tempfile}
+	cmdArgs := []string{"-sDEVICE=jpeg","-dNOGC","-dNumRenderingThreads=4","-dBATCH", "-dNOPAUSE", outputfile, "-r144", tempfile}
 	//the _ corresponds to cmdOut
 	if _, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
 		fmt.Fprintln(os.Stderr, "Error in conversion the conversion: ", err)
 	}
-	pages := getpdfpages("./uploads/" + filename)
+	pages := directpages("./uploads/" + filename)
 	generatedURL := "http://167.172.41.222/?pdf_name=" + filename + "&pages=" + pages
 
 	if i, _ := strconv.Atoi(pages); i != 0 {
@@ -114,7 +134,7 @@ func main() {
 	app.Use(recover.New())
 	app.Use(logger.New())
 	app.Use(cors.New())
-
+	directpages("./uploads/greedy_Alg.pdf")
 	//app.Use(middleware.Favicon("./favicon.ico"))
 	//Use nginx for server side caching https://ww.nginx.com/resources/wiki/start/topics/examples/reverseproxycachingexample/
 	app.Static("/", "./public")
