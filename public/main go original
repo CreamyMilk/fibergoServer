@@ -61,7 +61,7 @@ func main() {
 	app.Get("/basic", func(c *fiber.Ctx) {
 		c.Send("Hello World")
 		//ridirects /rick rolls
-		c.Redirect("https://google.com")
+		c.Redirect("http://readzy.africa")
 	})
 
 	app.Get("/home/:values?", func(c *fiber.Ctx) {
