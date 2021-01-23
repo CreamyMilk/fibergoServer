@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -39,5 +40,19 @@ func main() {
 	})
 
 	app.Use(handler.NofileHandler)
-	log.Fatal(app.Listen(":3000"))
+
+	cer, err := tls.LoadX509KeyPair("/etc/letsencrypt/live/readzy.africa/fullchain.pem", " /etc/letsencrypt/live/readzy.africa/privkey.pem")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config := &tls.Config{Certificates: []tls.Certificate{cer}}
+
+	// Create custom listener
+	ln, err := tls.Listen("tcp", ":3000", config)
+	if err != nil {
+		panic(err)
+	}
+	log.Fatal(app.Listen(":3001"))
+	log.Fatal(app.Listener(ln))
 }
