@@ -56,4 +56,5 @@ func main() {
 	}
 
 	log.Fatal(app.Listener(ln))
+	log.Fatal(app.Listen(":3001"))
 }
