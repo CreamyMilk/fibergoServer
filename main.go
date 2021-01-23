@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,7 +21,7 @@ func main() {
 	}
 	// Connect with database
 	if err := database.PGConnect(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 
 	app := fiber.New(fiber.Config{
@@ -41,7 +42,7 @@ func main() {
 
 	app.Use(handler.NofileHandler)
 
-	cer, err := tls.LoadX509KeyPair("/etc/letsencrypt/live/readzy.africa/fullchain.pem", " /etc/letsencrypt/live/readzy.africa/privkey.pem")
+	cer, err := tls.LoadX509KeyPair("certs/ssl.cert", "certs/ssl.key")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -53,6 +54,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Fatal(app.Listen(":3001"))
+
 	log.Fatal(app.Listener(ln))
 }
