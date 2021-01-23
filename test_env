@@ -1,0 +1,5 @@
+MONGO_URL=mongodb+srv://coolusername:supersecretpass@cluster0.mtbev.gcp.mongodb.net/testss?retryWrites=true&w=majority"
+POSTGRESS_USERNAME=bob
+POSTGRESS_PASS=bobssecret
+POSTGRESS_PORT=10001
+POSTGRESS_DBNAME=company_data
