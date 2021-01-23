@@ -34,7 +34,7 @@ type Record struct {
 
 // Connect configures the MongoDB client and initializes the database connection.
 // Source: https://www.mongodb.com/blog/post/quick-start-golang--mongodb--starting-and-setup
-func Connect() error {
+func MongoConnect() error {
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
