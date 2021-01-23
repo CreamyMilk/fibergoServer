@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 
+	"jotham/database"
 	"jotham/handler"
 	"jotham/helper"
 )
@@ -16,6 +17,11 @@ func main() {
 	if err := helper.MongoConnect(); err != nil {
 		log.Fatal(err)
 	}
+	// Connect with database
+	if err := database.PGConnect(); err != nil {
+		log.Fatal(err)
+	}
+
 	app := fiber.New(fiber.Config{
 		BodyLimit:    52428800, //50mb
 		ServerHeader: "Fiber",
@@ -24,7 +30,7 @@ func main() {
 	app.Use(logger.New())
 	app.Use(cors.New())
 
-	app.Post("/savefiles", handler.SaveHandler)
+	app.Post("/savepdf", handler.SaveHandler)
 	app.Static("/", "./public")
 	app.Static("/pages", "./uploads/testfolder", fiber.Static{
 		Compress:  false,
