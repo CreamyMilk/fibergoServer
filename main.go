@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"log"
 
+	"jotham/database"
+	"jotham/handler"
+	"jotham/helper"
+	"jotham/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-
-	"jotham/database"
-	"jotham/handler"
-	"jotham/helper"
 )
 
 func main() {
 	if err := helper.MongoConnect(); err != nil {
 		log.Fatal(err)
 	}
-	// Connect with database
 	if err := database.PGConnect(); err != nil {
 		fmt.Println(err)
 	}
@@ -26,6 +26,7 @@ func main() {
 	app := fiber.New(fiber.Config{
 		BodyLimit:    52428800, //50mb
 		ServerHeader: "Fiber",
+		Prefork:      true,
 	})
 	app.Use(recover.New())
 	app.Use(logger.New())
@@ -40,6 +41,7 @@ func main() {
 	})
 
 	app.Use(handler.NofileHandler)
-
+	root := utils.GetROOTDomain()
+	fmt.Printf("Root Domain set is %v", root)
 	log.Fatal(app.Listen(":3000"))
 }

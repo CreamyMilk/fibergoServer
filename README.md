@@ -4,7 +4,8 @@ Make the PDF creation Event Dirven
 ---
 So on file upload
 Make a temp file
-Add record to sql table
+
+Then add record to sql table
   * OwnerIDs
   * EditorsIDs
   * OriginalName
@@ -13,30 +14,33 @@ Add record to sql table
   * Regions
   * URL
 
-Publish to the queue a new file is available
+
+Publish to the queue a file created event
 --- 
   * Turn the pdf into images
-  * Upload it original Pdf to google cloud storage (We dont use GCPs E * Events so as to prevent vendor locking
-  * Move files to NGINX server so as to serve the image(
+  * Upload the original PDF to google cloud storage (_We dont use GCPs Events so as to prevent vendor locking_)
+  * Move images to NGINX server
   * Use gofiber as the staic server for content with limited access
  
 
 
 Reader Updates to be API based
 ---
-domain/?pdf_name="232323"#page/1
-using the pdf_name
-  *Get Number of pages
-  *Get clickable regions
-  *Get imagesource urls
+
+#### Reader Page => __domain/?pdf_name="232323"#page/1__
+using the *pdf_name*
+  * Get Number of pages
+  * Get clickable regions
+  * Get imagesource urls
 
 
 
-URLs Shortened verions
-readzy.africa/s/i/NewYorkTimes
+### URLs Shortener service
+domain/s/i/NewYorkTimes
 
 USE Postgress because
-links
+links TBL
   *Long,Short,Facebook,Instagram,Whatsapp
+
 MongoDB device bump 
   *request from which type of device,IP,Location
