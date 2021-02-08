@@ -18,8 +18,9 @@ Then add record to sql table
 Publish to the queue a file created event
 --- 
   * Turn the pdf into images
+  * Read the text from the PDF and store it in elasticSearch for full text search.
   * Upload the original PDF to google cloud storage (_We dont use GCPs Events so as to prevent vendor locking_)
-  * Move images to NGINX server
+  * Move images to NGINX serverh
   * Use gofiber as the staic server for content with limited access
  
 
